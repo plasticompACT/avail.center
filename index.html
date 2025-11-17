@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>avail.center – Scenario Comparison</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #1a1a1a;
+      --ink: #f5f5f5;
+      --muted: #9ca3af;
+      --border: #2d2d2d;
+      --red: #de0707;
+      --red-hover: #ff2a2a;
+      --shadow: 0 6px 28px rgba(0,0,0,0.6);
+      --header-h: 68px;
+      --chart-h-mob: 50vh;
+      --right-col-w: 42vw;
+      --right-col-min: 520px;
+      --radius: 20px;
+    }
+    html, body { background: var(--bg); color: var(--ink); }
+    .headline { font-family: 'Space Grotesk', sans-serif; font-weight: 600; letter-spacing: -0.01em; }
+    .ui { font-family: 'Inter', sans-serif; }
+    .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); }
+    .touch-target { min-height: 44px; }
+    .btn { @apply touch-target px-3 py-2 rounded-xl border transition; border: 1px solid var(--red); color: var(--red); background: white; }
+    .btn:hover { background: #ffe5e5; }
+    .btn-primary { background: var(--red); color: white; border: none; }
+    .btn-primary:hover { background: var(--red-hover); }
+    .slider::-webkit-slider-thumb { height: 28px; width: 28px; border-radius: 9999px; background: var(--red); border: 3px solid white; }
+    .slider::-moz-range-thumb { height: 28px; width: 28px; border-radius: 9999px; background: var(--red); border: 3px solid white; }
+    header.app-header {
+      position: fixed; top:0; left:0; right:0; height: var(--header-h);
+      background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border); z-index:100;
+    }
+    .app-title { color: var(--ink); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--red); display: inline-block; }
+    .dot-wrap { display: inline-flex; align-items: center; justify-content:center; }
+    .dot-wrap:hover .dot { transform: scale(0.92); opacity: .85; }
+    .chart-bar-mob {
+      position: fixed; top: var(--header-h); left:0; right:0; height: var(--chart-h-mob);
+      z-index:80; background: var(--bg); display:grid; place-items:center;
+    }
+    .chart-inner-mob canvas { width:100% !important; height:100% !important; }
+    .top-spacer-mob { height: calc(var(--header-h) + var(--chart-h-mob)); }
+    .subtle-note { color: var(--muted); font-size: 0.92rem; }
+    .editable { outline: none; border-bottom: 1px dashed var(--red); transition: border-color .2s ease; }
+    .editable:focus { border-bottom-color: var(--red-hover); }
+    .panel { border: 1px solid var(--border); border-radius: var(--radius); background: #fff; box-shadow: var(--shadow); }
+    @media (min-width: 1024px) {
+      body.split { overflow-x: hidden; }
+      .left-col { max-width: 960px; margin-left:auto; margin-right: calc(var(--right-col-w)); padding-right:28px; }
+      .right-fixed { position: fixed; top: var(--header-h); right:0; width: max(var(--right-col-w), var(--right-col-min)); height: calc(100vh - var(--header-h)); display:flex; flex-direction: column; align-items:center; justify-content:flex-start; gap:12px; background: transparent; z-index: 90; padding: 12px 0; }
+      .right-fixed canvas { width: 92% !important; height: 76vh !important; }
+      .chart-bar-mob, .top-spacer-mob { display:none !important; }
+    }
+  
+  /* Improved typography for dark mode */
+  body, .ui {
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+  .headline {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+    font-weight: 600;
+  }
+  p, label, select, input, button, span {
+    color: #e5e5e5 !important;
+  }
+  .subtle-note, .text-black\/80, .text-slate-600, .text-slate-700 {
+    color: #bcbcbc !important;
+  }
+  .card, .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  input, select, button {
+    background-color: #111 !important;
+    border-color: #333 !important;
+  }
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    border: 3px solid #222 !important;
+  }
+  footer {
+    color: #888 !important;
+  }
+  
+  /* Chart panels reverted to light mode for clarity */
+  .chart-bar-mob .panel,
+  .right-fixed .panel {
+    background: #f7f8fa !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+  }
+  .chart-bar-mob canvas,
+  .right-fixed canvas {
+    background: #ffffff !important;
+  }
+  #overlay-mob, #overlay-desk {
+    background: rgba(255,255,255,0.6) !important;
+    color: var(--red) !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+  
+  /* Universal rounded design for buttons, cards, inputs, and panels */
+  button, .btn, .card, .panel, input, select, textarea {
+    border-radius: 16px !important;
+  }
+  .btn {
+    border-radius: 16px !important;
+  }
+  .card, .panel {
+    border-radius: 20px !important;
+  }
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
+    border-radius: 9999px !important;
+  }
+  
+/* --- Compact modern layout (NYC–SF style) --- */
+:root {
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 18px;
+  --font-small: 0.85rem;
+  --font-base: 0.95rem;
+  --font-large: 1.15rem;
+  --gap-tight: 0.5rem;
+}
+
+/* Global typography */
+body, .ui {
+  font-size: var(--font-base);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+}
+
+h1, .headline {
+  font-size: var(--font-large) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em;
+  text-transform: none;
+}
+
+p, label, span {
+  font-size: var(--font-small) !important;
+  color: #d4d4d4 !important;
+}
+
+/* Compact cards */
+.card.criteria-card {
+  padding: 0.65rem 1rem !important;
+  border-radius: var(--radius-md) !important;
+  font-size: var(--font-small);
+  line-height: 1.4;
+}
+
+.criteria-card .headline {
+  font-size: 1rem !important;
+  font-weight: 600;
+  margin-bottom: 0.25rem !important;
+}
+
+.criteria-card p {
+  font-size: 0.8rem !important;
+  opacity: 0.8;
+  margin-bottom: 0.6rem !important;
+}
+
+/* Compact input styling */
+.criteria-card input[type="range"] {
+  height: 16px !important;
+}
+.criteria-card label {
+  font-size: 0.8rem !important;
+  color: #ccc !important;
+}
+
+/* Tight grid */
+.criteria-card .grid {
+  gap: 0.5rem !important;
+}
+
+/* Compact header and footer */
+header.app-header {
+  height: 60px !important;
+  padding: 0 1.2rem !important;
+}
+footer {
+  font-size: 0.8rem !important;
+  margin-top: 4rem !important;
+}
+
+/* Buttons smaller but crisp */
+.btn {
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.85rem !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+
+#btnPng { display: none !important; }
+</style>
+
+
+
+<style>
+  header.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: #de0707;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    z-index: 100;
+  }
+  header.app-header h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: white;
+    margin: 0;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    display: inline-block;
+  }
+  .dot-wrap:hover .dot {
+    animation: pulse 1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.9); opacity: 0.7; }
+  }
+
+  /* Improved typography for dark mode */
+  body, .ui {
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.65;
+    font-weight: 400;
+  }
+  .headline {
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255,255,255,0.1);
+    font-weight: 600;
+  }
+  p, label, select, input, button, span {
+    color: #e5e5e5 !important;
+  }
+  .subtle-note, .text-black\/80, .text-slate-600, .text-slate-700 {
+    color: #bcbcbc !important;
+  }
+  .card, .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  }
+  input, select, button {
+    background-color: #111 !important;
+    border-color: #333 !important;
+  }
+  .slider::-webkit-slider-thumb,
+  .slider::-moz-range-thumb {
+    border: 3px solid #222 !important;
+  }
+  footer {
+    color: #888 !important;
+  }
+  
+  /* Chart panels reverted to light mode for clarity */
+  .chart-bar-mob .panel,
+  .right-fixed .panel {
+    background: #f7f8fa !important;
+    border: 1px solid #e5e7eb !important;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08) !important;
+  }
+  .chart-bar-mob canvas,
+  .right-fixed canvas {
+    background: #ffffff !important;
+  }
+  #overlay-mob, #overlay-desk {
+    background: rgba(255,255,255,0.6) !important;
+    color: var(--red) !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+  
+  /* Universal rounded design for buttons, cards, inputs, and panels */
+  button, .btn, .card, .panel, input, select, textarea {
+    border-radius: 16px !important;
+  }
+  .btn {
+    border-radius: 16px !important;
+  }
+  .card, .panel {
+    border-radius: 20px !important;
+  }
+  input[type="range"]::-webkit-slider-thumb,
+  input[type="range"]::-moz-range-thumb {
+    border-radius: 9999px !important;
+  }
+  </style>
+
+
+
+</head>
+
+<body class="ui min-h-screen split">
+  <header class="app-header">
+    <div class="max-w-6xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
+      <h1 class="headline app-title text-2xl sm:text-3xl flex items-center gap-3 text-white">
+        <span class="dot-wrap"><span class="dot"></span></span>
+        avail.center
+      </h1>
+<button id="companyLicenseBtn"
+class="px-3 py-1 text-[11px] sm:text-xs font-semibold rounded-full"
+style="background:white;color:#de0707;opacity:0.9;margin-left:12px;">
+Company License
+</button>
+
+      
+    </div>
+  </header>
+
+  <!-- Mobile chart -->
+  <div class="chart-bar-mob">
+    <div class="chart-inner-mob relative w-full h-full panel">
+      <canvas id="radar-mobile"></canvas>
+      <div id="overlay-mob" class="absolute inset-0 bg-white/60 backdrop-blur-sm hidden place-items-center text-slate-500 text-lg font-medium">
+        Displaying your chart here in a moment
+      </div>
+    </div>
+  </div>
+  <div class="top-spacer-mob"></div>
+
+  <!-- Desktop right chart + export -->
+  <aside class="right-fixed">
+    <div class="flex items-center gap-2">
+      
+      <button id="btnPng" class="btn">Export PNG</button>
+      <button id="btnPdf" class="btn btn-primary">Export PDF</button>
+    </div>
+    <div class="relative w-full h-full flex items-center justify-center panel">
+      <canvas id="radar-desktop"></canvas>
+      <div id="overlay-desk" class="absolute inset-0 bg-white/60 backdrop-blur-sm hidden place-items-center text-slate-500 text-lg font-medium">
+        Displaying your chart here in a moment
+      </div>
+    </div>
+  </aside>
+
+  <main class="left-col p-5 sm:p-8">
+    <section class="mb-8">
+      <div class="card p-6 sm:p-8">
+        <h2 class="headline text-2xl sm:text-3xl mb-3">Focused, scenario-based evaluation</h2>
+        <p class="text-[15px] sm:text-base text-black/80 mb-5">Pick a topic, set your criteria, rate your options. We will give you a radar chart with the full circle being the best option. Make it round.</p>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div>
+            <div id="categoryHint" class="subtle-note mb-2">My avail is about …</div>
+            <select id="domainSelect" class="border rounded-xl p-2 bg-white w-full max-w-md">
+              <option value="">– choose –</option>
+            </select>
+            <div class="mt-3" id="typeRadios"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-black font-medium">Options</label>
+              <div class="flex gap-2">
+                <button id="addOption" class="btn">➕ Add</button>
+                <button id="removeOption" class="btn">➖ Remove</button>
+              </div>
+            </div>
+            <div class="flex flex-col gap-2 max-w-md" id="optionNames"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-3">
+      <div class="flex items-center justify-between">
+        <h3 class="headline text-xl">Criteria</h3>
+        <div class="flex gap-2">
+          <button id="addQuestion" class="btn">➕ Add Question</button>
+          <button id="removeQuestion" class="btn">➖ Remove Last</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="questions" class="space-y-6"></section>
+
+    <footer class="mt-12 mb-10 text-center text-sm text-black/60">
+      <p>avail.center • No storage on server • Local only • © 2025</p>
+    </footer>
+  </main>
+
+  
+  <!-- Paywall modal -->
+  <div id="paywallModal"
+       class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden items-center justify-center z-[200]">
+    <div class="card p-6 w-[320px] text-center">
+      <h2 class="headline text-xl mb-3">Export your file</h2>
+      <p class="mb-4 text-sm opacity-80">
+        Export your file.<br>
+        One-time payment required.<br>
+        No subscription.<br><br>
+        We accept <b>plasticos</b><br>(insert 8-digit code)
+      </p>
+
+      <input id="plasticoInput"
+             maxlength="8"
+             class="border p-2 rounded w-full text-center bg-white text-black"
+             placeholder="12345678">
+
+      <p id="plasticoError"
+         class="text-red-400 text-xs mt-2 hidden">
+         Invalid code. Please try again.
+      </p>
+
+      <div class="flex gap-3 mt-5">
+        <button id="plasticoCancel"
+                class="btn w-1/2">Cancel</button>
+
+        <button id="plasticoVerify"
+                class="btn btn-primary w-1/2">
+                Verify &amp; Export
+        </button>
+      </div>
+<div class="mt-4">
+  <button id="paypalBtn"
+          class="w-full py-2 rounded-xl"
+          style="
+            background:#ffc439;
+            color:#111;
+            font-weight:600;
+            border:none;
+            box-shadow:0 2px 4px rgba(0,0,0,0.2);
+          ">
+    Pay with PayPal
+  </button>
+</div>
+<div class="mt-3">
+  <button id="stripeBtn"
+          class="w-full py-2 rounded-xl"
+          style="
+            background:#635bff;
+            color:white;
+            font-weight:600;
+            border:none;
+            box-shadow:0 2px 4px rgba(0,0,0,0.2);
+          ">
+    Pay with Stripe
+  </button>
+</div>
+
+
+    </div>
+  </div>
+
+  
+  
+  <!-- Company Annual License modal -->
+  <div id="companyLicenseModal"
+       class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-[210]">
+    <div class="card p-6 w-[360px] text-center bg-[#111] text-white border border-white/10 rounded-2xl shadow-2xl">
+      <h2 class="headline text-xl mb-3 text-white">Company Annual License</h2>
+      <p class="mb-4 text-sm opacity-80">
+        12 months unlimited exports.<br>
+        One-time license, no subscription.<br><br>
+        <b>30 €</b> or <b>150 plasticos</b>
+      </p>
+
+      <input id="companyPlasticoInput"
+             maxlength="8"
+             class="border border-white/20 bg-black text-white p-2 rounded w-full text-center"
+             placeholder="12345678">
+
+      <p id="companyPlasticoError"
+         class="text-red-400 text-xs mt-2 hidden">
+        Invalid plastico code.
+      </p>
+
+      <div class="flex gap-3 mt-5">
+        <button id="companyPlasticoCancel" class="btn w-1/2 bg-white/10 text-white border border-white/20">
+          Cancel
+        </button>
+        <button id="companyPlasticoVerify" class="btn btn-primary w-1/2 bg-red-600 text-white">
+          Redeem plastico
+        </button>
+      </div>
+
+      <div class="mt-5 text-xs opacity-70">Or pay online:</div>
+
+      <button id="companyPaypalBtn"
+              class="w-full py-2 rounded-xl mt-3 font-semibold"
+              style="background:#ffc439;color:#111;">
+        Pay 30 € with PayPal
+      </button>
+
+      <button id="companyStripeBtn"
+              class="w-full py-2 rounded-xl mt-3 font-semibold"
+              style="background:#635bff;color:white;">
+        Pay 30 € with Stripe
+      </button>
+    </div>
+  </div>
+
+
+<script src="./script.js"></script>
+  <script>
+    // Hook header export buttons to existing handlers
+    document.addEventListener('DOMContentLoaded', () => {
+      const pngTop = document.getElementById('btnPngTop');
+      const pdfTop = document.getElementById('btnPdfTop');
+      const png = document.getElementById('btnPng');
+      const pdf = document.getElementById('btnPdf');
+      if (pngTop && png) pngTop.addEventListener('click', () => png.click());
+      if (pdfTop && pdf) pdfTop.addEventListener('click', () => pdf.click());
+    });
+  </script>
+
+
+<button id="resetBtn" class="btn" style="
+position:fixed;
+right:20px;
+z-index:99999;
+background:#b00000;
+color:white;
+padding:10px 16px;
+border-radius:10px;
+">Reset</button>
+</body>
+</html>
