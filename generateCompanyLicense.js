@@ -1,4 +1,3 @@
-// netlify/functions/generateCompanyLicense.js
 // Generates a personalized single-file HTML with embedded license code + expiry.
 
 const fs = require("fs");
@@ -16,7 +15,7 @@ function generateExpiryISO() {
   const now = new Date();
   const exp = new Date(now);
   exp.setFullYear(exp.getFullYear() + 1);
-  return exp.toISOString().slice(0, 10); // YYYY-MM-DD
+  return exp.toISOString().slice(0, 10);
 }
 
 exports.handler = async (event) => {
@@ -25,7 +24,8 @@ exports.handler = async (event) => {
       return { statusCode: 405, body: "Method Not Allowed" };
     }
 
-    const templatePath = path.join(__dirname, "..", "company-license-template.html");
+    // Correct flat path
+    const templatePath = path.join(__dirname, "company-license-template.html");
     const template = fs.readFileSync(templatePath, "utf8");
 
     const code = generateCode();
