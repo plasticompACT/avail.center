@@ -343,12 +343,6 @@ footer {
         <span class="dot-wrap"><span class="dot"></span></span>
         avail.center
       </h1>
-<button id="companyLicenseBtn"
-class="px-3 py-1 text-[11px] sm:text-xs font-semibold rounded-full"
-style="background:white;color:#de0707;opacity:0.9;margin-left:12px;">
-Company License
-</button>
-
       
     </div>
   </header>
@@ -487,56 +481,7 @@ Company License
     </div>
   </div>
 
-  
-  
-  <!-- Company Annual License modal -->
-  <div id="companyLicenseModal"
-       class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-[210]">
-    <div class="card p-6 w-[360px] text-center bg-[#111] text-white border border-white/10 rounded-2xl shadow-2xl">
-      <h2 class="headline text-xl mb-3 text-white">Company Annual License</h2>
-      <p class="mb-4 text-sm opacity-80">
-        12 months unlimited exports.<br>
-        One-time license, no subscription.<br><br>
-        <b>30 €</b> or <b>150 plasticos</b>
-      </p>
-
-      <input id="companyPlasticoInput"
-             maxlength="8"
-             class="border border-white/20 bg-black text-white p-2 rounded w-full text-center"
-             placeholder="12345678">
-
-      <p id="companyPlasticoError"
-         class="text-red-400 text-xs mt-2 hidden">
-        Invalid plastico code.
-      </p>
-
-      <div class="flex gap-3 mt-5">
-        <button id="companyPlasticoCancel" class="btn w-1/2 bg-white/10 text-white border border-white/20">
-          Cancel
-        </button>
-        <button id="companyPlasticoVerify" class="btn btn-primary w-1/2 bg-red-600 text-white">
-          Redeem plastico
-        </button>
-      </div>
-
-      <div class="mt-5 text-xs opacity-70">Or pay online:</div>
-
-      <button id="companyPaypalBtn"
-              class="w-full py-2 rounded-xl mt-3 font-semibold"
-              style="background:#ffc439;color:#111;">
-        Pay 30 € with PayPal
-      </button>
-
-      <button id="companyStripeBtn"
-              class="w-full py-2 rounded-xl mt-3 font-semibold"
-              style="background:#635bff;color:white;">
-        Pay 30 € with Stripe
-      </button>
-    </div>
-  </div>
-
-
-<script src="./script.js"></script>
+  <script src="./script.js"></script>
   <script>
     // Hook header export buttons to existing handlers
     document.addEventListener('DOMContentLoaded', () => {

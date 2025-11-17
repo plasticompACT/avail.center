@@ -673,28 +673,3 @@ if (stripeBtn) {
     alert("Stripe payment coming soon.");
   });
 }
-
-// Company modal logic + function call
-const cModal=document.getElementById("companyLicenseModal");
-const cBtn=document.getElementById("companyLicenseBtn");
-const cIn=document.getElementById("companyPlasticoInput");
-const cErr=document.getElementById("companyPlasticoError");
-const cCancel=document.getElementById("companyPlasticoCancel");
-const cVerify=document.getElementById("companyPlasticoVerify");
-function openC(){cIn.value="";cErr.classList.add("hidden");cModal.classList.remove("hidden");cModal.classList.add("flex");}
-function closeC(){cModal.classList.add("hidden");cModal.classList.remove("flex");}
-if(cBtn) cBtn.onclick=openC;
-if(cCancel) cCancel.onclick=closeC;
-if(cVerify) cVerify.onclick=async()=>{
-  const code=cIn.value.trim();
-  if(!validatePlastico(code)){cErr.classList.remove("hidden");return;}
-  cErr.classList.add("hidden");
-  // Call Netlify function
-  const res=await fetch("/.netlify/functions/generateCompanyLicense",{method:"POST"});
-  const blob=await res.blob();
-  const disp=res.headers.get("Content-Disposition")||"";
-  let fn="company-license.html";const m=disp.match(/filename="([^"]+)"/);if(m)fn=m[1];
-  const url=URL.createObjectURL(blob);const a=document.createElement("a");
-  a.href=url;a.download=fn;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-  closeC();
-};
