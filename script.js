@@ -673,3 +673,13 @@ if (stripeBtn) {
     alert("Stripe payment coming soon.");
   });
 }
+
+// === Company License Modal ===
+const companyLicenseModal=document.getElementById("companyLicenseModal");
+const companyLicenseBtn=document.getElementById("companyLicenseBtn");
+const companyPlasticoInput=document.getElementById("companyPlasticoInput");
+const companyPlasticoError=document.getElementById("companyPlasticoError");
+const companyPlasticoCancel=document.getElementById("companyPlasticoCancel");
+const companyPlasticoVerify=document.getElementById("companyPlasticoVerify");
+if(companyLicenseBtn) companyLicenseBtn.onclick=()=>{companyLicenseModal.classList.add("flex");companyLicenseModal.classList.remove("hidden");};
+if(companyPlasticoCancel) companyPlasticoCancel.onclick=()=>{companyLicenseModal.classList.add("hidden");companyLicenseModal.classList.remove("flex");};
